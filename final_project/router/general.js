@@ -3,16 +3,31 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
+// Activer express.json() pour le parsing des JSON
 
 
-public_users.post("/register", (req,res) => {
-  //Write your code here
-  users.push({
-    'name': req.query.name,
-    'password':req.query.password,
-  })
+// Route pour l'inscription
+public_users.post("/register", (req, res) => {
+  // Extraction des données `username` et `password` du corps de la requête
+  const { username, password } = req.body;
 
-  res.send(req.query.name + "est inscrit")
+  // Vérification de la présence des données `username` et `password`
+  if (!username || !password) {
+    return res.status(400).send("Veuillez fournir un nom d'utilisateur et un mot de passe.");
+  }
+
+  // Vérifier si l'utilisateur existe déjà
+  if (users.find(user => user.username === username)) {
+    return res.status(400).send("Le nom d'utilisateur existe déjà dans la base.");
+  }
+
+  // Ajouter le nouvel utilisateur
+  users.push({ 
+    username: username,
+    password: password
+  });
+
+  res.send(`${username} est inscrit avec succès.`);
 });
 
 // Get the book list available in the shop
@@ -26,11 +41,11 @@ public_users.get('/isbn/:isbn',function (req, res) {
   //Write your code here
 
   const isbn = req.params.isbn;
-  const book = books.find(book=>book.isbn === isbn)
+  const book =books[isbn]
   if(!book){
     return res.send('Livre non trouver')
   }else{
-    res.json(book);
+    res.send(book);
   }
   
 });
@@ -38,8 +53,8 @@ public_users.get('/isbn/:isbn',function (req, res) {
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   //Write your code here
-  const isbn = req.params.author;
-  const book = books.find(book=>book.author === title)
+  const author= req.params.author;
+  const book = Object.values(books).find(book=>book.author === author)
   if(!book){
     return res.send('Livre non trouver')
   }else{
@@ -50,12 +65,12 @@ public_users.get('/author/:author',function (req, res) {
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
   //Write your code here
-  const isbn = req.params.title;
-  const book = books.find(book=>book.title === title)
+  const title = req.params.title;
+  const book =Object.values(books).find(book=>book.title === title)
   if(!book){
     return res.send('Livre non trouver')
   }else{
-    res.json(book);
+    res.send(book);
   }
 });
 
@@ -63,7 +78,7 @@ public_users.get('/title/:title',function (req, res) {
 public_users.get('/review/:isbn',function (req, res) {
   //Write your code here
   const isbn = req.params.isbn;
-  const book = books.find(book=>book.isbn === isbn)
+  const book = books[isbn]
   if(!book){
     return res.send('Livre non trouver')
   }else{
