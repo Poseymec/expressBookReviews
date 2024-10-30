@@ -3,32 +3,30 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
+
 // Activer express.json() pour le parsing des JSON
 
 
 // Route pour l'inscription
 public_users.post("/register", (req, res) => {
-  // Extraction des données `username` et `password` du corps de la requête
   const { username, password } = req.body;
 
-  // Vérification de la présence des données `username` et `password`
+  // Vérification que les champs username et password sont fournis
   if (!username || !password) {
     return res.status(400).send("Veuillez fournir un nom d'utilisateur et un mot de passe.");
   }
 
-  // Vérifier si l'utilisateur existe déjà
-  if (users.find(user => user.username === username)) {
+  // Vérification si le nom d'utilisateur existe déjà
+  const userExists = users.find(user => user.username === username);
+  if (userExists) {
     return res.status(400).send("Le nom d'utilisateur existe déjà dans la base.");
   }
 
-  // Ajouter le nouvel utilisateur
-  users.push({ 
-    username: username,
-    password: password
-  });
-
-  res.send(`${username} est inscrit avec succès.`);
+  // Enregistrement du nouvel utilisateur
+  users.push({ username, password });
+  res.status(201).send(`${username} est inscrit avec succès.`);
 });
+
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
