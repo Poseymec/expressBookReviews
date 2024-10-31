@@ -77,6 +77,26 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
   }
 });
 
+//supprimer les review
+
+regd_users.delete("/auth/review/:isbn",(req,res) =>{
+
+  const isbn = req.params.isbn;
+  const username = req.session.user ? req.session.user.username : null;
+
+  if(!username){
+    return res.status(400).send("l'utilisateur n'est pas connecté ")
+  }
+  if(!isbn||!reviews[isbn]){
+    return res.status(400).send("isbn et review requis")
+  }
+  const existeReview= reviews[isbn].findIndex(r=>r.username ===username)
+  if(existeReview !==-1){
+    reviews[isbn].splice(username,1);
+    return res.status(200).send("review supprimé avec succes")
+  }
+});
+
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
 module.exports.users = users;
